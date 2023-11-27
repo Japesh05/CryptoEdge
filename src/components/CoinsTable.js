@@ -14,13 +14,13 @@ export function numberWithCommas(x) {
 const CoinsTable = () => {
   const [search, setSearch] = useState();
   const [page, setPage] = useState(1);
+  const [searchPage , setSearchPage] = useState(1);
 
   const { currency, symbol, coins, loading, fetchCoins } = CryptoState();
 
 
   useEffect(() => {
     fetchCoins();
-    console.log("I am rendered again with currency");
   }, [currency])
 
   const darkTheme = createTheme(({
@@ -33,13 +33,19 @@ const CoinsTable = () => {
   }));
 
   const handleSearch = () => {
-    console.log(`I am rendered again with search + ${search}`);
-    if (search === "" || search === undefined) return coins;
-    return coins.filter(
+    if (search === "" || search === undefined){
+      if(searchPage > 1){
+        setSearchPage(1);
+      }
+      return coins;
+    }
+    const arr = coins.filter(
       (coin) =>
         coin.name.toLowerCase().includes(search) ||
         coin.symbol.toLowerCase().includes(search)
     );
+    if(page > 1) setPage(1);
+    return arr;
   };
 
   const useStyles = makeStyles()((theme) => ({
@@ -110,7 +116,7 @@ const CoinsTable = () => {
 
                 <TableBody>
                   {((search === undefined || search === "") ? (handleSearch().slice((page - 1) * 10, (page - 1) * 10 + 10)) :
-                    handleSearch().slice(0,10)).map((row) => {
+                    (handleSearch().slice((searchPage - 1) * 10, (searchPage - 1) * 10 + 10))).map((row) => {
                       const profit = row.price_change_percentage_24h > 0;
 
                       return (
@@ -120,7 +126,7 @@ const CoinsTable = () => {
                           key={row.name}>
 
                           <TableCell
-                            component= "th"
+                            component="th"
                             scope="row"
                             style={{
                               display: "flex",
@@ -192,6 +198,7 @@ const CoinsTable = () => {
             classes={{ ul: classes.pagination }}
             onChange={(_, value) => {
               setPage(value);
+              setSearchPage(value);
               window.scroll(0, 450);
             }}
           />
